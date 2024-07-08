@@ -1,0 +1,907 @@
+--Creazione delle tabelle--
+
+/**
+ * TABELLA: ClassDiagram
+ * Crea la tabella ClassDiagram e implementa i vincoli intrarelazionali
+ */
+CREATE TABLE ClassDiagram
+(CodCD VARCHAR(5),
+NomeCD VARCHAR(20) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codCD PRIMARY KEY (CodCD),
+CONSTRAINT id_nomeCD UNIQUE (NomeCD)
+);
+
+/
+
+/**
+ * TABELLA: Classe
+ * Crea la tabella Classe e implementa i vincoli intrarelazionali
+ */
+CREATE TABLE Classe
+(CodClasse VARCHAR(5),
+NomeClasse VARCHAR(20) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codC PRIMARY KEY (CodClasse)
+);
+
+/
+
+/**
+ * TABELLA: Comp_CD_C
+ * Crea la tabella Comp_CD_C e implementa i vincoli interrelazionali
+ */
+CREATE TABLE Comp_CD_C
+(CodClasse VARCHAR(5),
+CodCD VARCHAR(5),
+-- Vincoli
+CONSTRAINT fk_comp_cdc_codC FOREIGN KEY (CodClasse) REFERENCES Classe (CodClasse),
+CONSTRAINT fk_comp_cdc_codCD FOREIGN KEY (CodCD) REFERENCES ClassDiagram (CodCD),
+CONSTRAINT unique_comp_cdc_cod UNIQUE (CodClasse,CodCD)
+);
+
+/
+
+/**
+ * TABELLA: Specializzazione
+ * Crea la tabella Specializzazione e implementa i vincoli interrelazionali
+ */
+CREATE TABLE Specializzazione
+(TipoS1 VARCHAR(8) CHECK (TipoS1 IN ('Parziale', 'Totale')),
+TipoS2 VARCHAR(11) CHECK (TipoS2 IN ('Disgiunta', 'Sovrapposta')),
+CodClasse VARCHAR(5),
+CodClasseS VARCHAR(5),
+-- Vincoli
+CONSTRAINT fk_sp_codC FOREIGN KEY (CodClasse) REFERENCES Classe (CodClasse),
+CONSTRAINT fk_sp_codCS FOREIGN KEY (CodClasseS) REFERENCES Classe (CodClasse),
+CONSTRAINT unique_specializzazione_cod UNIQUE (CodClasse,CodClasseS)
+);
+
+/
+
+/**
+ * TABELLA: Associazione
+ * Crea la tabella Associazionee implementa i vincoli intrarelazionali/ennupla
+ */
+CREATE TABLE Associazione
+(CodA VARCHAR(5),
+NomeA VARCHAR(20),
+TipoA VARCHAR(12) CHECK (TipoA IN ('Singola', 'Multipla', 'Ricorsiva', 'Composizione', 'Aggregazione')),
+Grado INT NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codA PRIMARY KEY (CodA),
+CONSTRAINT check_grado_tipoA CHECK ((Grado=1 AND TipoA='Ricorsiva') OR (Grado=2 AND ((TipoA='Singola') OR (TipoA='Composizione') OR (TipoA='Aggregazione'))) OR (Grado>2 AND TipoA='Multipla'))
+);
+
+/
+
+/**
+ * TABELLA: Comp_CD_A
+ * Crea la tabella Comp_CD_A e implementa i vincoli interrelazionali
+ */
+CREATE TABLE Comp_CD_A
+(CodCD VARCHAR(5),
+CodA VARCHAR(5),
+-- Vincoli
+CONSTRAINT fk_comp_cda_codCD FOREIGN KEY (CodCD) REFERENCES ClassDiagram (CodCD),
+CONSTRAINT fk_comp_cda_codA FOREIGN KEY (CodA) REFERENCES Associazione (CodA),
+CONSTRAINT unique_comp_cda_cod UNIQUE (CodCD,CodA)
+);
+
+/
+
+/**
+ * TABELLA: Partecipa
+ * Crea la tabella Partecipa e implementa i vincoli interrelazionali
+ */
+CREATE TABLE Partecipa
+(NomeRuolo VARCHAR(20),
+TipoCard VARCHAR(20) NOT NULL,
+CodClasse VARCHAR(5),
+CodA VARCHAR(5),
+-- Vincoli
+CONSTRAINT fk_par_codC FOREIGN KEY (CodClasse) REFERENCES Classe (CodClasse),
+CONSTRAINT fk_par_codA FOREIGN KEY (CodA) REFERENCES Associazione (CodA)
+);
+
+/
+
+/**
+ * TABELLA: ClasseDiAssociazione
+ * Crea la tabella ClasseDiAssociazione e implementa i vincoli intrarelazionali/interrelazionali
+ */
+CREATE TABLE ClasseDiAssociazione
+(CodCA VARCHAR(5),
+NomeCA VARCHAR(20) NOT NULL,
+CodClasse VARCHAR(5) NOT NULL,
+CodA VARCHAR(5) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codCA PRIMARY KEY (CodCA),
+CONSTRAINT fk_ca_codC FOREIGN KEY (CodClasse) REFERENCES Classe (CodClasse),
+CONSTRAINT fk_ca_codA FOREIGN KEY (CodA) REFERENCES Associazione (CodA),
+CONSTRAINT id_nomeCA UNIQUE (NomeCA)
+);
+
+/
+
+/**
+ * TABELLA: Tipo
+ * Crea la tabella Tipo e implementa i vincoli intrarelazionali/ennupla
+ */
+CREATE TABLE Tipo
+(CodTipo VARCHAR(5),
+NomeTipo VARCHAR(6) CHECK (NomeTipo IN ('char', 'boolean', 'double', 'long', 'int', 'float', 'short', 'class', 'array', 'enum', 'String', 'byte')),
+-- Vincoli
+CONSTRAINT pk_codT PRIMARY KEY (CodTipo)
+);
+
+/
+
+/**
+ * TABELLA: Attributo
+ * Crea la tabella Attributo e implementa i vincoli intrarelazionali/interrelazionali/ennupla
+ */
+CREATE TABLE Attributo 
+(CodAtt VARCHAR(5),
+NomeAtt VARCHAR(20) NOT NULL,
+Molteplicità VARCHAR(10) NOT NULL,
+TipoAtt1 VARCHAR(8) CHECK (TipoAtt1 IN ('Parziale', 'Totale')),
+TipoAtt2 VARCHAR(8) CHECK (TipoAtt2 IN ('Singolo', 'Multiplo')),
+Calcolato CHAR(2) CHECK (Calcolato IN ('SI', 'NO')),
+CodTipo VARCHAR(5) NOT NULL,
+CodClasse VARCHAR(5) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codAtt PRIMARY KEY (CodAtt),
+CONSTRAINT fk_tipoAtt_codT FOREIGN KEY (CodTipo) REFERENCES Tipo (CodTipo),
+CONSTRAINT fk_att_codC FOREIGN KEY (CodClasse) REFERENCES Classe (CodClasse),
+CONSTRAINT id_nomeAtt UNIQUE (NomeAtt,CodClasse),
+CONSTRAINT check_molteplicità CHECK ((TipoAtt1='Totale' AND Molteplicità<>'0'))
+);
+
+/
+
+/**
+ * TABELLA: TipoClasse
+ * Crea la tabella TipoClasse e implementa i vincoli intrarelazionali/interrelazionali
+ */
+CREATE TABLE TipoClasse
+(CodTipoC VARCHAR(5),
+CodTipo VARCHAR(5) NOT NULL,
+CodClasse VARCHAR(5) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codTC PRIMARY KEY (CodTipoC),
+CONSTRAINT fk_tipoC_codT FOREIGN KEY (CodTipo) REFERENCES Tipo (CodTipo),
+CONSTRAINT fk_tipoC_codC FOREIGN KEY (CodClasse) REFERENCES Classe (CodClasse),
+CONSTRAINT unique_tipoC UNIQUE (CodClasse)
+);
+/
+
+/**
+ * TABELLA: TipoArray
+ * Crea la tabella TipoArray e implementa i vincoli intrarelazionali/interrelazionali
+ */
+CREATE TABLE TipoArray
+(CodTipoA VARCHAR(5),
+Dimensione INT NOT NULL,
+CodTipo VARCHAR(5) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codTA PRIMARY KEY (CodTipoA),
+CONSTRAINT fk_tipoA_codT FOREIGN KEY (CodTipo) REFERENCES Tipo (CodTipo)
+);
+
+/
+
+/**
+ * TABELLA: Enumerazione
+ * Crea la tabella Enumerazione e implementa i vincoli intrarelazionali/interrelazionali
+ */
+CREATE TABLE Enumerazione
+(CodE VARCHAR(5),
+NomeE VARCHAR(20) NOT NULL,
+CodTipo VARCHAR(5) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codE PRIMARY KEY (CodE),
+CONSTRAINT fk_enum_codTipo FOREIGN KEY (CodTipo) REFERENCES Tipo (CodTipo),
+CONSTRAINT id_nomeE UNIQUE (NomeE)
+);
+
+/
+
+/**
+ * TABELLA: Valori
+ * Crea la tabella Valori e implementa i vincoli intrarelazionali
+ */
+CREATE TABLE Valori
+(CodV VARCHAR(5),
+NomeV VARCHAR(20) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codV PRIMARY KEY (CodV)
+);
+
+/
+
+/**
+ * TABELLA: Comp_Val
+ * Crea la tabella Comp_Val e implementa i vincoli interrelazionali
+ */
+CREATE TABLE Comp_Val
+(CodV VARCHAR(5),
+CodE VARCHAR(5),
+-- Vincoli
+CONSTRAINT fk_codV FOREIGN KEY (CodV) REFERENCES Valori (CodV),
+CONSTRAINT fk_codE FOREIGN KEY (CodE) REFERENCES Enumerazione (CodE),
+CONSTRAINT unique_comp_val_cod UNIQUE (CodV,CodE)
+);	
+
+/
+/**
+ * TABELLA: Parametro
+ * Crea la tabella Parametro e implementa i vincoli intrarelazionali/interrelazionali
+ */
+CREATE TABLE Parametro
+(CodPar VARCHAR(5),
+NomePar VARCHAR(20) NOT NULL,
+TipoPar VARCHAR(5) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codP PRIMARY KEY (CodPar),
+CONSTRAINT fk_par_codT FOREIGN KEY (TipoPar) REFERENCES Tipo (CodTipo)
+);
+
+/
+
+/**
+ * TABELLA: Metodo
+ * Crea la tabella Metodo e implementa i vincoli intrarelazionali/interrelazionali
+ */
+CREATE TABLE Metodo
+(CodM VARCHAR(5),
+NomeM VARCHAR(20) NOT NULL,
+Segnatura VARCHAR(500) NOT NULL,
+CodClasse VARCHAR(5) NOT NULL,
+-- Vincoli
+CONSTRAINT pk_codM PRIMARY KEY (CodM),
+CONSTRAINT fk_m_codC FOREIGN KEY (CodClasse) REFERENCES Classe (CodClasse),
+CONSTRAINT id_nomeMetodo UNIQUE (NomeM, CodClasse)
+);
+
+/
+
+/**
+ * TABELLA: Comp_Par_M
+ * Crea la tabella Comp_Par_M e implementa i vincoli interrelazionali
+ */
+CREATE TABLE Comp_Par_M
+(CodM VARCHAR(5),
+CodPar VARCHAR(5),
+-- Vincoli
+CONSTRAINT fk_codM FOREIGN KEY (CodM) REFERENCES Metodo (CodM),
+CONSTRAINT fk_codP FOREIGN KEY (CodPar) REFERENCES Parametro (CodPar),
+CONSTRAINT unique_comp_par_cod UNIQUE (CodM,CodPar)
+);
+
+
+--Creazione delle viste--
+
+/**
+ * Vista per associare ad ogni class diagram le rispettive classi con i propri nomi
+ */
+CREATE OR REPLACE VIEW view_nome_codC (CodCD, CodClasse, Nome) AS 
+ SELECT CC.CodCD, CC.CodClasse, CL.NomeClasse
+ FROM Comp_CD_C CC JOIN Classe CL ON CC.CodClasse=CL.CodClasse;
+
+/**
+ * Vista per associare ad ogni class diagram le rispettive associazioni con i propri nomi
+ */
+CREATE OR REPLACE VIEW view_nome_codA (CodCd, CodA, NomeA) AS 
+ SELECT CA.CodCd, ASS.CodA, ASS.NomeA
+ FROM Comp_CD_A CA JOIN Associazione ASS ON CA.CodA=ASS.CodA;
+
+/**
+ * Vista per associare ad ogni metodo i rispettivi parametri con i propri nomi
+ */
+CREATE OR REPLACE VIEW view_nome_codPar (CodM, CodPar, Nome) AS 
+ SELECT PM.CodM, PM.CodPar, PAR.NomePar
+ FROM Comp_Par_M PM JOIN Parametro PAR ON PM.CodPar=PAR.CodPar;
+
+/**
+ * Vista per associare ad ogni enumerazione i rispettivi valori con i propri nomi
+ */
+CREATE OR REPLACE VIEW view_nome_codV (CodE, CodV, Nome) AS 
+ SELECT CV.CodE, CV.CodV, VAL.NomeV
+ FROM Comp_Val CV JOIN Valori VAL ON CV.CodV=VAL.CodV;
+
+
+
+--Creazione delle sequenze--
+
+/**
+ * Sequenza per inserire la chiave primaria di Tipo
+ */
+CREATE SEQUENCE id_seq_codTipo
+ MINVALUE 1 
+ MAXVALUE 9999 
+ INCREMENT BY 1 START WITH 9 
+ CACHE 20;
+
+
+
+--Creazione dei trigger--
+
+/**
+ * Trigger per creare un'istanza di Tipo quando viene inserita un'istanza di TipoArray
+ */ 
+CREATE OR REPLACE TRIGGER trigger_tipoArray
+ BEFORE INSERT ON TipoArray
+ BEGIN
+  INSERT INTO Tipo VALUES ('T'||id_seq_codTipo.nextval, 'array');
+END;
+
+/
+
+/**
+ * Trigger per creare un'istanza di Tipo quando viene inserita un'istanza di TipoClasse
+ */ 
+CREATE OR REPLACE TRIGGER trigger_tipoClasse
+ BEFORE INSERT ON TipoClasse
+ BEGIN
+  INSERT INTO Tipo VALUES ('T'||id_seq_codTipo.nextval, 'class');
+END;
+
+/
+
+/**
+ * Trigger per creare un'istanza di Tipo quando viene inserita un'istanza di Enumerazione
+ */ 
+CREATE OR REPLACE TRIGGER trigger_Enumerazione
+BEFORE INSERT ON Enumerazione
+BEGIN
+  INSERT INTO Tipo VALUES ('T'||id_seq_codTipo.nextval, 'enum');
+END;
+
+/
+
+/**
+ * Trigger sul vincolo id_nomeClasse: 
+ * non possono esistere più classi con lo stesso nome all'interno dello stesso class diagram
+ */
+CREATE OR REPLACE TRIGGER id_nomeClasse
+  
+ BEFORE INSERT ON Comp_CD_C
+ FOR EACH ROW
+  
+ DECLARE
+  exep1 EXCEPTION;
+  temp VARCHAR(10);
+  parola VARCHAR(20);
+  
+ BEGIN
+      
+  SELECT NomeClasse INTO parola
+  FROM Classe
+  WHERE CodClasse=:NEW.CodClasse;
+      
+  SELECT COUNT(Nome) INTO temp
+  FROM view_nome_codC
+  WHERE Nome=parola AND CodCD=:NEW.CodCD;
+      
+  IF(temp>0) THEN 
+   RAISE exep1; 
+  END IF;
+      
+ EXCEPTION WHEN exep1 THEN
+  raise_application_error (-20001,'ESISTE GIA UNA CLASSE CON IL NOME INSERITO NEL CLASS DIAGRAM SELEZIONATO');
+END;
+
+/
+
+/**
+ * Trigger sul vincolo id_nomeAssociazione: 
+ * non possono esistere più associazioni con lo stesso nome all'interno dello stesso class diagram
+ */
+CREATE OR REPLACE TRIGGER id_nomeAssociazione
+  
+ BEFORE INSERT ON Comp_CD_A
+ FOR EACH ROW
+  
+ DECLARE
+  exep1 EXCEPTION;
+  temp VARCHAR(10);
+  parola VARCHAR(20);
+  
+ BEGIN
+      
+  SELECT NomeA INTO parola
+  FROM Associazione
+  WHERE CodA=:NEW.CodA;
+      
+  SELECT COUNT(Nomea) INTO temp
+  FROM view_nome_codA
+  WHERE Nomea=parola AND CodCD=:NEW.CodCD;
+
+  IF(temp>0) THEN 
+   RAISE exep1; 
+  END IF;
+      
+ EXCEPTION WHEN exep1 THEN
+  raise_application_error (-20001,'ESISTE GIA UNA ASSOCIAZIONE CON IL NOME INSERITO NEL CLASS DIAGRAM SELEZIONATO');
+END;
+  
+/
+
+/**
+ * Trigger sul vincolo id_nomeParametro: 
+ * non possono esistere più parametri con lo stesso nome associati allo stesso metodo
+ */
+CREATE OR REPLACE TRIGGER id_nomeParametro
+  
+ BEFORE INSERT ON Comp_Par_M
+ FOR EACH ROW
+  
+ DECLARE
+  exep1 EXCEPTION;
+  temp VARCHAR(10);
+  parola VARCHAR(20);
+  
+ BEGIN
+      
+  SELECT NomePar INTO parola
+  FROM Parametro
+  WHERE CodPar=:NEW.CodPar;
+      
+  SELECT COUNT(Nome) INTO temp
+  FROM view_nome_codPar
+  WHERE Nome=parola AND CodM=:NEW.CodM;
+
+  IF(temp>0) THEN 
+   RAISE exep1; 
+  END IF;
+      
+ EXCEPTION WHEN exep1 THEN
+  raise_application_error (-20001,'ESISTE GIA UN PARAMERO CON IL NOME INSERITO NEL METODO SELEZIONATO');
+END;
+
+/
+
+/**
+ * Trigger sul vincolo id_nomeValori: 
+ * non possono esistere più valori con lo stesso nome all'interno della stessa enumerazione
+ */
+CREATE OR REPLACE TRIGGER id_nomeValori	
+  
+ BEFORE INSERT ON Comp_Val
+ FOR EACH ROW
+  
+ DECLARE
+  exep1 EXCEPTION;
+  temp VARCHAR(10);
+  parola VARCHAR(20);
+  
+ BEGIN
+      
+  SELECT NomeV INTO parola
+  FROM Valori 
+  WHERE CodV=:NEW.CodV;
+      
+  SELECT COUNT(Nome) INTO temp
+  FROM view_nome_codV
+  WHERE Nome=parola AND CodE=:NEW.CodE;
+      
+  IF(temp>0) THEN 
+   RAISE exep1; 
+  END IF;
+      
+ EXCEPTION WHEN exep1 THEN
+  raise_application_error (-20001,'ESISTE GIA UN VALORE CON IL NOME INSERITO NELLA ENUMERAZIONE SELEZIONATA');
+END;
+
+/
+
+/**
+ * Trigger sul vincolo constraint_ruolo_comp_aggr:
+ * se l'associazione è di tipo composizioneo o aggregazione, il ruolo può essere 'composto', 'componente', 'aggregato' o 'aggregante'
+ */
+CREATE OR REPLACE TRIGGER contraint_ruolo_comp_aggr
+  
+ BEFORE INSERT ON Partecipa
+ FOR EACH ROW
+  
+ DECLARE
+  parola VARCHAR2(20);
+  exep1 EXCEPTION;
+  exep2 EXCEPTION;
+    
+ BEGIN
+  SELECT TipoA INTO parola
+  FROM Associazione 
+  WHERE CodA=:NEW.CodA;
+    
+  IF(parola='Composizione') THEN
+   IF((:NEW.NomeRuolo<>'composto') AND (:NEW.NomeRuolo<>'componente')) THEN
+    RAISE EXEP1;
+   END IF;
+  END IF;
+  
+  IF(parola='Aggregazione') THEN
+   IF((:NEW.NomeRuolo<>'aggregato') AND (:NEW.NomeRuolo<>'aggregante')) THEN
+    RAISE EXEP2;
+   END IF;
+  END IF;
+    
+ EXCEPTION WHEN exep1 THEN
+             raise_application_error (-20001,'IL RUOLO DEVE ESSERE composto O componente');
+           WHEN exep2 THEN
+             raise_application_error (-20001,'IL RUOLO DEVE ESSERE aggregato O aggregante');
+END;
+
+/
+
+/**
+ * Trrigger sul vincolo id_componenti:
+ * non possono esistere classi componenti che sono associate a più di una classe composta
+ */
+CREATE OR REPLACE TRIGGER id_componenti
+  
+ BEFORE INSERT ON Partecipa
+ FOR EACH ROW
+  
+ DECLARE
+  parola VARCHAR2(20);
+  exep1 EXCEPTION;
+
+ BEGIN
+  SELECT NomeRuolo INTO parola
+  FROM Partecipa 
+  WHERE (CodClasse=:NEW.CodClasse) AND (NomeRuolo='componente');
+  
+  IF(parola='componente') THEN
+   RAISE exep1;
+  END IF;
+   
+ EXCEPTION WHEN exep1 THEN
+             raise_application_error (-20001,'UNA CLASSE E GIA COMPONENTE');
+           WHEN NO_DATA_FOUND THEN
+             DBMS_OUTPUT.PUT_LINE('ok');
+END;
+
+/
+
+--Popolamento:--
+
+/**
+ * Inserimento di dati nella classe Tipo
+ */
+INSERT INTO Tipo VALUES ('T001', 'String');
+INSERT INTO Tipo VALUES ('T002', 'int');
+
+
+--Class Diagram 1:--
+
+/**
+ * Inserimento di dati in ClassDiagram
+ */
+INSERT INTO ClassDiagram VALUES ('CD001', 'CD_Biblioteca');
+
+
+/**
+ * Inserimento di dati in Classe
+ */
+INSERT INTO Classe VALUES ('C001', 'Biblioteca');
+INSERT INTO Classe VALUES ('C002', 'Deposito');
+INSERT INTO Classe VALUES ('C003', 'Descrittore');
+INSERT INTO Classe VALUES ('C004', 'CopieFisiche');
+INSERT INTO Classe VALUES ('C005', 'Cartaceo');
+INSERT INTO Classe VALUES ('C006', 'Digitale');
+
+
+/**
+ * Inserimento nella classe che crea la relazione tra Classe e Classdiagram
+ */
+INSERT INTO Comp_CD_C VALUES ('C001','CD001');
+INSERT INTO Comp_CD_C VALUES ('C002','CD001');
+INSERT INTO Comp_CD_C VALUES ('C003','CD001');
+INSERT INTO Comp_CD_C VALUES ('C004','CD001');
+INSERT INTO Comp_CD_C VALUES ('C005','CD001');
+INSERT INTO Comp_CD_C VALUES ('C006','CD001');
+
+
+/**
+ * Inserimento di dati in Specializzazione
+ */
+INSERT INTO Specializzazione VALUES ('Totale', 'Disgiunta', 'C004','C005');
+INSERT INTO Specializzazione VALUES ('Totale', 'Disgiunta', 'C004', 'C006');
+
+
+/**
+ * Inserimento di dati in Associazione
+ */
+INSERT INTO Associazione VALUES ('A001', 'usare', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A002', 'contiene', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A003', 'descrizione', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A004', 'ospitare', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A005', 'formato', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A006', 'associare', 'Ricorsiva', 1);
+
+
+/**
+ * Inserimento nella classe che crea la relazione tra Associazione e Classdiagram
+ */
+INSERT INTO Comp_CD_A VALUES ('CD001', 'A001');
+INSERT INTO Comp_CD_A VALUES ('CD001', 'A002');
+INSERT INTO Comp_CD_A VALUES ('CD001', 'A003');
+INSERT INTO Comp_CD_A VALUES ('CD001', 'A004');
+INSERT INTO Comp_CD_A VALUES ('CD001', 'A005');
+INSERT INTO Comp_CD_A VALUES ('CD001', 'A006');
+
+
+/**
+ * Inserimento di dati in Partecipa
+ */
+INSERT INTO Partecipa VALUES ('usa', '1.*', 'C001', 'A001');
+INSERT INTO Partecipa VALUES ('reparto', '1', 'C002', 'A001');
+INSERT INTO Partecipa VALUES ('ha', '1.*', 'C001', 'A005');
+INSERT INTO Partecipa VALUES ('in', '1.*', 'C003', 'A005');
+INSERT INTO Partecipa VALUES ('possiede', '1.*', 'C001', 'A002');
+INSERT INTO Partecipa VALUES ('proprietà', '1', 'C004', 'A002');
+INSERT INTO Partecipa VALUES ('variante', '0.*', 'C003', 'A006');
+INSERT INTO Partecipa VALUES ('associato', '0.*', 'C003', 'A006'); 
+INSERT INTO Partecipa VALUES ('copie', '0.*', 'C003', 'A003');
+INSERT INTO Partecipa VALUES ('descritto da', '1.*', 'C004', 'A003');
+INSERT INTO Partecipa VALUES ('ospita', '1.*', 'C002', 'A004');
+INSERT INTO Partecipa VALUES ('custodito', '1', 'C005', 'A004');
+
+
+/**
+ * Inserimento di dati in Attributo
+ */
+INSERT INTO Attributo VALUES ('AT001', 'codice', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C001');
+INSERT INTO Attributo VALUES ('AT002', 'indirizzo', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C001');
+INSERT INTO Attributo VALUES ('AT003', 'nome', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C001');
+INSERT INTO Attributo VALUES ('AT004', 'homepage', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C001');
+INSERT INTO Attributo VALUES ('AT005', 'indirizzo', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C002');
+INSERT INTO Attributo VALUES ('AT006', 'luogo', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C002');
+INSERT INTO Attributo VALUES ('AT007', 'stanza', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C002');
+INSERT INTO Attributo VALUES ('AT008', 'accesso', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C002');
+INSERT INTO Attributo VALUES ('AT009', 'ISBN', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C003');
+INSERT INTO Attributo VALUES ('AT010', 'formato', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C003');
+INSERT INTO Attributo VALUES ('AT011', 'testo', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C003');
+INSERT INTO Attributo VALUES ('AT012', 'collezione', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C004');
+INSERT INTO Attributo VALUES ('AT013', 'codInventario', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C004');
+INSERT INTO Attributo VALUES ('AT014', 'dataAcquisizione', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C004');
+INSERT INTO Attributo VALUES ('AT015', 'dataAcquisto', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C004');
+INSERT INTO Attributo VALUES ('AT016', 'provenienza', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C004');
+INSERT INTO Attributo VALUES ('AT017', 'codiceBarre', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C005');
+INSERT INTO Attributo VALUES ('AT018', 'collocazione', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C005');
+INSERT INTO Attributo VALUES ('AT019', 'stato', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C005');
+INSERT INTO Attributo VALUES ('AT020', 'path', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C006');
+INSERT INTO Attributo VALUES ('AT021', 'accesso', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C006');
+INSERT INTO Attributo VALUES ('AT022', 'dim', '1', 'Totale', 'Singolo', 'NO', 'T002', 'C006');
+INSERT INTO Attributo VALUES ('AT023', 'formato', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C006');
+
+
+--Class Diagram 2:--
+
+/**
+ * Inserimento di dati in ClassDiagram
+ */
+INSERT INTO ClassDiagram VALUES ('CD002', 'CD_Test');
+
+
+/**
+ * Inserimento di dati in Classe
+ */
+INSERT INTO Classe VALUES ('C007', 'Test');
+INSERT INTO Classe VALUES ('C008', 'Domande');
+INSERT INTO Classe VALUES ('C009', 'Risposta');
+INSERT INTO Classe VALUES ('C010', 'Studente');
+INSERT INTO Classe VALUES ('C011', 'Libera');
+INSERT INTO Classe VALUES ('C012', 'RispostaM');
+INSERT INTO Classe VALUES ('C013', 'Opzione');
+INSERT INTO Classe VALUES ('C014', 'Composizione');
+
+
+/**
+ * Inserimento nella classe che crea la relazione tra Classe e Classdiagram
+ */
+INSERT INTO Comp_CD_C VALUES ('C007', 'CD002');
+INSERT INTO Comp_CD_C VALUES ('C008', 'CD002');
+INSERT INTO Comp_CD_C VALUES ('C009', 'CD002');
+INSERT INTO Comp_CD_C VALUES ('C010', 'CD002');
+INSERT INTO Comp_CD_C VALUES ('C011', 'CD002');
+INSERT INTO Comp_CD_C VALUES ('C012', 'CD002');
+INSERT INTO Comp_CD_C VALUES ('C013', 'CD002');
+INSERT INTO Comp_CD_C VALUES ('C014', 'CD002');
+
+
+/**
+ * Inserimento di dati in Specializzazione
+ */
+INSERT INTO Specializzazione VALUES ('Totale', 'Disgiunta', 'C008','C011');
+INSERT INTO Specializzazione VALUES ('Totale', 'Disgiunta', 'C008','C012');
+
+
+/**
+ * Inserimento di dati in Associazione
+ */
+INSERT INTO Associazione VALUES ('A007', 'contiene', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A008', 'composizione', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A009', 'rispondere', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A010', 'fornita', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A011', 'formata', 'Singola', 2);
+
+
+/**
+ * Inserimento nella classe che crea la relazione tra Associazione e Classdiagram
+ */
+INSERT INTO Comp_CD_A VALUES ('CD002', 'A007');
+INSERT INTO Comp_CD_A VALUES ('CD002', 'A008');
+INSERT INTO Comp_CD_A VALUES ('CD002', 'A009');
+INSERT INTO Comp_CD_A VALUES ('CD002', 'A010');
+INSERT INTO Comp_CD_A VALUES ('CD002', 'A011');
+
+
+/**
+ * Inserimento di dati in Partecipa
+ */
+INSERT INTO Partecipa VALUES ('composto', '1.*', 'C007', 'A008');
+INSERT INTO Partecipa VALUES ('in', '*', 'C008', 'A008');
+INSERT INTO Partecipa VALUES ('associata', '*', 'C007', 'A007');
+INSERT INTO Partecipa VALUES ('riferita', '1', 'C009', 'A007');
+INSERT INTO Partecipa VALUES ('data', '*', 'C008', 'A009');
+INSERT INTO Partecipa VALUES ('a', '1', 'C009', 'A009');
+INSERT INTO Partecipa VALUES ('data da', '1', 'C009', 'A010');
+INSERT INTO Partecipa VALUES ('fornisce', '*', 'C010', 'A010');
+INSERT INTO Partecipa VALUES ('prevista', '1.*', 'C012', 'A011');
+INSERT INTO Partecipa VALUES ('per', '1', 'C013', 'A011');
+
+
+/**
+ * Inserimento di dati in ClasseDiAssociazione
+ */
+INSERT INTO ClasseDiAssociazione VALUES ('CA001', 'Composizione', 'C014', 'A008');
+
+
+/**
+ * Inserimento di dati in Attributo
+ */
+INSERT INTO Attributo VALUES ('AT024', 'tipo', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C007');
+INSERT INTO Attributo VALUES ('AT025', 'difficoltà', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C007');
+INSERT INTO Attributo VALUES ('AT026', 'codice', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C007');
+INSERT INTO Attributo VALUES ('AT027', 'testo', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C008'); 
+INSERT INTO Attributo VALUES ('AT028', 'codice', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C008');
+INSERT INTO Attributo VALUES ('AT029', 'difficoltà', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C008');
+INSERT INTO Attributo VALUES ('AT030', 'data', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C009'); 
+INSERT INTO Attributo VALUES ('AT031', 'valore', '1', 'Totale', 'Singolo', 'NO', 'T002', 'C009');
+INSERT INTO Attributo VALUES ('AT032', 'matricola', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C010'); 
+INSERT INTO Attributo VALUES ('AT033', 'nome', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C010');
+INSERT INTO Attributo VALUES ('AT034', 'cognome', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C010');
+INSERT INTO Attributo VALUES ('AT035', 'ordine', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C014');
+INSERT INTO Attributo VALUES ('AT036', 'soluzione', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C011'); 
+INSERT INTO Attributo VALUES ('AT037', 'puntiErrata', '1', 'Totale', 'Singolo', 'NO', 'T002', 'C011');
+INSERT INTO Attributo VALUES ('AT038', 'puntiCorretta', '1', 'Totale', 'Singolo', 'NO', 'T002', 'C011');
+INSERT INTO Attributo VALUES ('AT039', 'ordine', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C013'); 
+INSERT INTO Attributo VALUES ('AT040', 'testo', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C013');
+INSERT INTO Attributo VALUES ('AT041', 'corretta', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C013');
+INSERT INTO Attributo VALUES ('AT042', 'punti', '1', 'Totale', 'Singolo', 'NO', 'T002', 'C013');
+
+
+
+--Class Diagram 3:--
+
+/**
+ * Inserimento di dati in ClassDiagram
+ */
+INSERT INTO ClassDiagram VALUES ('CD003', 'CD_file_system');
+
+
+/**
+ * Inserimento di dati in Classe
+ */
+INSERT INTO Classe VALUES ('C015', 'Elemento');
+INSERT INTO Classe VALUES ('C016', 'Utente');
+INSERT INTO Classe VALUES ('C017', 'Cartella');
+INSERT INTO Classe VALUES ('C018', 'File');
+INSERT INTO Classe VALUES ('C019', 'Diritto');
+
+
+/**
+ * Inserimento nella classe che crea la relazione tra Classe e Classdiagram
+ */
+INSERT INTO Comp_CD_C VALUES ('C015','CD003');
+INSERT INTO Comp_CD_C VALUES ('C016','CD003');
+INSERT INTO Comp_CD_C VALUES ('C017','CD003');
+INSERT INTO Comp_CD_C VALUES ('C018','CD003');
+INSERT INTO Comp_CD_C VALUES ('C019','CD003');
+
+/**
+ * Inserimento di dati in Specializzazione
+ */
+INSERT INTO Specializzazione VALUES ('Totale', 'Disgiunta', 'C015','C017');
+INSERT INTO Specializzazione VALUES ('Totale', 'Disgiunta', 'C015','C018');
+
+
+/**
+ * Inserimento di dati in Associazione
+ */
+INSERT INTO Associazione VALUES ('A012', 'contiene', 'Singola', 2);
+INSERT INTO Associazione VALUES ('A013', 'diritto', 'Singola', 2);
+
+
+/**
+ * Inserimento nella classe che crea la relazione tra Associazione e Classdiagram
+ */
+INSERT INTO Comp_CD_A VALUES ('CD003', 'A012');
+INSERT INTO Comp_CD_A VALUES ('CD003', 'A013');
+
+/**
+ * Inserimento di dati in Partecipa
+ */
+INSERT INTO Partecipa VALUES ('visto da', '*', 'C015', 'A013');
+INSERT INTO Partecipa VALUES ('vede', '*', 'C016', 'A013');
+INSERT INTO Partecipa VALUES ('contenuto', '0.1', 'C015', 'A012');
+INSERT INTO Partecipa VALUES ('contiene', '*', 'C017', 'A012'); 
+
+/**
+ * Inserimento di dati in ClasseDiAssociazione
+ */
+INSERT INTO ClasseDiAssociazione VALUES ('CA002', 'Diritto', 'C019', 'A013');
+
+
+/**
+ * Inserimento di dati in Enumerazione
+ */
+INSERT INTO Enumerazione VALUES ('E'||id_seq_codTipo.currval, 'DirittoTipo', 'T'||id_seq_codTipo.currval);
+/**
+ * Inserimento di dati in Valori
+ */
+INSERT INTO Valori VALUES ('V001', 'R');
+INSERT INTO Valori VALUES ('V002', 'W'); 
+INSERT INTO Valori VALUES ('V003', 'RW'); 
+/**
+ * Inserimento nella classe che crea la relazione tra Enumerazione e Valori
+ */
+INSERT INTO Comp_Val VALUES ('V001','E'||id_seq_codTipo.currval);
+INSERT INTO Comp_Val VALUES ('V002','E'||id_seq_codTipo.currval);
+INSERT INTO Comp_Val VALUES ('V003','E'||id_seq_codTipo.currval);
+/**
+ * Inserimento di dati in Attributo
+ */
+INSERT INTO Attributo VALUES ('AT048', 'tipo', '1', 'Totale', 'Singolo', 'NO', 'T'||id_seq_codTipo.currval, 'C019');
+
+
+/**
+ * Inserimento di dati in Enumerazione
+ */
+INSERT INTO Enumerazione VALUES ('E'||id_seq_codTipo.currval, 'tipoVis', 'T'||id_seq_codTipo.currval);
+/**
+ * Inserimento di dati in Valori
+ */
+INSERT INTO Valori VALUES ('V004', 'dettaglio');  
+INSERT INTO Valori VALUES ('V005', 'iconeGrandi'); 
+INSERT INTO Valori VALUES ('V006', 'iconePiccole'); 
+INSERT INTO Valori VALUES ('V007', 'sintetico'); 
+/**
+ * Inserimento nella classe che crea la relazione tra Enumerazione e Valori
+ */
+INSERT INTO Comp_Val VALUES ('V004','E'||id_seq_codTipo.currval);
+INSERT INTO Comp_Val VALUES ('V005','E'||id_seq_codTipo.currval);
+INSERT INTO Comp_Val VALUES ('V006','E'||id_seq_codTipo.currval);
+INSERT INTO Comp_Val VALUES ('V007','E'||id_seq_codTipo.currval);
+/**
+ * Inserimento di dati in Attributo
+ */
+INSERT INTO Attributo VALUES ('AT051', 'visualizzazione', '1', 'Totale', 'Singolo', 'NO', 'T'||id_seq_codTipo.currval, 'C017'); 
+
+
+/**
+ * Inserimento di dati in Attributo
+ */
+INSERT INTO Attributo VALUES ('AT043', 'path', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C015');
+INSERT INTO Attributo VALUES ('AT044', 'nome', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C015');
+INSERT INTO Attributo VALUES ('AT045', 'email', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C016'); 
+INSERT INTO Attributo VALUES ('AT046', 'nome', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C016');
+INSERT INTO Attributo VALUES ('AT047', 'cognome', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C016');
+INSERT INTO Attributo VALUES ('AT049', 'estensione', '1', 'Totale', 'Singolo', 'NO', 'T001', 'C018'); 
+INSERT INTO Attributo VALUES ('AT050', 'dimensione', '1', 'Totale', 'Singolo', 'NO', 'T002', 'C018');
+INSERT INTO Attributo VALUES ('AT052', 'dimension', '1', 'Totale', 'Singolo', 'NO', 'T002', 'C017'); 
+
+
