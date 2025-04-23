@@ -1,0 +1,81 @@
+<form id="filterForm" method="GET" action="">
+  <!-- Asta inversa -->
+  <div th:if="${(role == null) or (role == 'venditore')}">
+    <label>
+      <input
+        type="radio"
+        name="filterType"
+        value="inversa"
+        th:checked="${role == 'venditore'}"
+        th:disabled="${role == 'compratore'}"
+      />
+      Inversa
+    </label>
+    <br />
+  </div>
+
+  <!-- Asta silenziosa -->
+  <div th:if="${(role == null) or (role == 'compratore')}">
+    <label>
+      <input
+        type="radio"
+        name="filterType"
+        value="silenziosa"
+        th:disabled="${role == 'venditore'}"
+      />
+      Silenziosa
+    </label>
+    <br />
+  </div>
+
+  <!-- Asta al ribasso -->
+  <div th:if="${(role == null) or (role == 'compratore')}">
+    <label>
+      <input
+        type="radio"
+        name="filterType"
+        value="ribasso"
+        th:disabled="${role == 'venditore'}"
+      />
+      Al ribasso
+    </label>
+    <br />
+  </div>
+
+  <!-- Opzione "Tutte", visibile per venditore -->
+  <div th:if="${(role == null) or (role == 'compratore')}">
+    <label>
+      <input type="radio" name="filterType" value="" checked />
+      Tutte
+    </label>
+    <br />
+  </div>
+
+  <button
+    type="submit"
+    class="btn btn-primary mt-2 ms-1 px-2 py-1"
+    th:disabled="${role == 'venditore'}"
+  >
+    Filtra
+  </button>
+</form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Imposta actionUrl dinamicamente se presente, altrimenti usa un valore predefinito
+    const actionUrl = window.location.pathname;
+    const form = document.getElementById("filterForm");
+    form.action = actionUrl;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterType = urlParams.get("filterType");
+    if (filterType) {
+      const radioButton = document.querySelector(
+        `input[name="filterType"][value="${filterType}"]`
+      );
+      if (radioButton) {
+        radioButton.checked = true;
+      }
+    }
+  });
+</script>

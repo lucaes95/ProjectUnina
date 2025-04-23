@@ -1,0 +1,64 @@
+<form id="filterForm" method="GET" action="">
+  <!-- Asta inversa -->
+  <div th:if="${(role == 'compratore')}">
+    <label>
+      <input type="radio" name="filterType" value="inversa" checked />
+      Inversa
+    </label>
+    <br />
+  </div>
+
+  <!-- Asta silenziosa -->
+  <div th:if="${(role == 'venditore')}">
+    <label>
+      <input type="radio" name="filterType" value="silenziosa" />
+      Silenziosa
+    </label>
+    <br />
+  </div>
+
+  <!-- Asta al ribasso -->
+  <div th:if="${(role == 'venditore')}">
+    <label>
+      <input type="radio" name="filterType" value="ribasso" />
+      Al ribasso
+    </label>
+    <br />
+  </div>
+
+  <!-- Opzione "Tutte", visibile per venditore -->
+  <div th:if="${(role == 'venditore')}">
+    <label>
+      <input type="radio" name="filterType" value="" checked />
+      Tutte
+    </label>
+    <br />
+  </div>
+
+  <button
+    type="submit"
+    id="filterButton"
+    class="btn btn-primary mt-2 ms-1 px-2 py-1"
+  >
+    Filtra
+  </button>
+</form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const actionUrl = window.location.pathname;
+    const form = document.getElementById("filterForm");
+    form.action = actionUrl;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterType = urlParams.get("filterType");
+    if (filterType) {
+      const radioButton = document.querySelector(
+        `input[name="filterType"][value="${filterType}"]`
+      );
+      if (radioButton) {
+        radioButton.checked = true;
+      }
+    }
+  });
+</script>

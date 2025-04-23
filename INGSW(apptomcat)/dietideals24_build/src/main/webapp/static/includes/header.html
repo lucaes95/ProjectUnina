@@ -1,0 +1,78 @@
+<nav class="row navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid align-items-end">
+    <a class="navbar-brand mx-3 pe-4" href="/dietideals24/index">
+      <img
+        src="/dietideals24/static/images/logo/logopng.png"
+        alt="Bootstrap"
+        width="115"
+        height="70"
+        class="d-inline-block align-text-top"
+      />
+    </a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarText"
+      aria-controls="navbarText"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarText">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 fs-4 mx-3">
+        <li class="nav-item">
+          <a
+            class="nav-link active"
+            aria-current="page"
+            href="/dietideals24/index"
+            >Home</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link active"
+            aria-current="page"
+            href="/dietideals24/manual"
+            >Regole d'uso</a
+          >
+        </li>
+      </ul>
+      <span class="navbar-text">
+        <th:block th:if="${role == null}">
+          <ul class="list-inline mx-3">
+            <li class="list-inline-item">
+              <a class="nav-link" href="/dietideals24/auth-servlet?action=login"
+                >accedi</a
+              >
+              <li class="list-inline-item p-0 m-0">|</li>
+            </li>
+            <li class="list-inline-item">
+              <a
+                class="nav-link"
+                href="/dietideals24/auth-servlet?action=register"
+                >registrati</a
+              >
+            </li>
+          </ul>
+        </th:block>
+
+        <!-- Menu role -->
+        <th:block th:if="${role == 'compratore'}">
+          <div
+            id="menuCompratore"
+            th:replace="~{/includes/menu_compratore.html}"
+          ></div>
+        </th:block>
+
+        <th:block th:if="${role == 'venditore'}">
+          <div
+            id="menuVeditore"
+            th:replace="~{/includes/menu_venditore.html}"
+          ></div>
+        </th:block>
+      </span>
+    </div>
+  </div>
+</nav>

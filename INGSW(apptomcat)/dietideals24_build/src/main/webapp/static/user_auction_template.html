@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="/dietideals24/static/bootstrap/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <title>DietiDeals24</title>
+  </head>
+  <body class="bg-body-tertiary">
+    <div class="container bg-white">
+      <!-- Header -->
+      <div id="header" th:replace="~{/includes/header.html}"></div>
+
+      <div
+        class="row row-cols-2 justify-content-center mt-4 align-items-center"
+      >
+        <!-- Search bar -->
+        <div class="col-md-3">
+          <div
+            id="search-bar"
+            th:replace="~{/includes/search_my_auctions.html}"
+          ></div>
+        </div>
+        <!-- Filter Category -->
+        <div class="col-lg-2">
+          <div
+            id="filter-category"
+            th:replace="~{/includes/filter_category_auctions.html}"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Filter Type Auctions -->
+      <div class="row">
+        <div class="col-md-2 mt-5 pt-5 ps-5">
+          <div
+            id="filter-type-auctions"
+            th:replace="~{/includes/filter_type_myauctions.html}"
+          ></div>
+        </div>
+
+        <!-- My auctions -->
+        <div class="col-md-10">
+          <div id="my-auctions" th:replace="~{/pages/my_auctions.html}"></div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div id="footer" th:replace="~{/includes/footer.html}"></div>
+    </div>
+
+    <script src="/dietideals24/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
