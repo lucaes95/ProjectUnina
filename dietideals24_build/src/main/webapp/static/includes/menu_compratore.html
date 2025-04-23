@@ -1,0 +1,41 @@
+<a href="/dietideals24/profile" class="btn border-0 text-right">
+  <th:block th:if="${username} != null">
+    <span th:text="'Benvenuto, ' + ${username}">username</span>
+  </th:block>
+</a>
+<div class="dropdown">
+  <a
+    class="btn border-0 dropdown-toggle"
+    href="#"
+    role="button"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+  >
+    Utente Compratore
+  </a>
+
+  <ul class="dropdown-menu">
+    <li>
+      <a class="dropdown-item" href="/dietideals24/profile">Il mio profilo</a>
+    </li>
+    <li>
+      <li>
+        <li>
+          <a class="dropdown-item d-inline-flex align-items-center" href="/dietideals24/user-notifications">  Notifiche
+              <span th:if="${hasUnreadNotifications}"
+                    class="badge bg-warning rounded-pill ms-2 p-1" style="width: 8px; height: 8px; display: inline-block;" title="Nuove notifiche"></span> </a>
+        </li>
+    </li>
+    <li>
+      <a class="dropdown-item" href="/dietideals24/interfaces-auction?action=inversa"
+        >Crea asta inversa</a
+      >
+    </li>
+    <li>
+      <a class="dropdown-item" href="/dietideals24/user-auctions?action=my_auctions"
+        >Le mie aste</a
+      >    
+    </li>
+    <li><a class="dropdown-item" href="/dietideals24/logout">logout</a></li>
+  </ul>
+</div>

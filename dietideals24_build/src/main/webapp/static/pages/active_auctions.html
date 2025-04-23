@@ -1,0 +1,162 @@
+<div class="row justify-content-center mb-3">
+  <h5 class="text-center mt-5">Ultime aste attive</h5>
+</div>
+
+<div
+  id="auction-container"
+  class="auction-list row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 bg-white"
+>
+  <p class="col offset-md-4 text-center">Caricamento aste...</p>
+</div>
+
+<div class="row justify-content-center pt-4 bg-white">
+  <div id="pagination-controls" class="text-center">
+    <button id="prev-page" disabled>Precedente</button>
+    <button id="next-page" disabled>Successivo</button>
+  </div>
+</div>
+
+<script>
+  function fetchAuctions(page = 1) {
+    const params = new URLSearchParams(window.location.search);
+    const keyword = params.get("keyword") || "";
+    const pageSize = parseInt(params.get("pageSize"), 10) || 9;
+    const filterType = params.get("filterType") || "";
+    const category = params.get("category") || "";
+
+    const url = `/dietideals24/active-auctions?page=${page}&pageSize=${pageSize}&keyword=${encodeURIComponent(
+      keyword
+    )}&filterType=${encodeURIComponent(
+      filterType
+    )}&category=${encodeURIComponent(category)}`;
+
+    const container = document.getElementById("auction-container");
+    container.innerHTML = `<p class="col offset-md-4 text-center">Caricamento aste...</p>`;
+    document.getElementById("prev-page").disabled = true;
+    document.getElementById("next-page").disabled = true;
+
+    fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Dati ricevuti dal server:", data);
+
+        container.innerHTML = ``;
+
+        if (!data || !Array.isArray(data.auctions)) {
+          console.error("Formato dati non valido:", data);
+          container.innerHTML = `<p class="col offset-md-4 text-center">Errore: risposta del server non valida.</p>`;
+          return;
+        }
+
+        if (data.auctions.length === 0) {
+          container.innerHTML = `<p class="col offset-md-4 text-center">Non ci sono aste attive${
+            page > 1 ? " per questa pagina" : " al momento"
+          }.</p>`;
+          document.getElementById("prev-page").disabled = page <= 1;
+          return;
+        }
+
+        data.auctions.forEach((auction) => {
+          const auctionItem = document.createElement("div");
+          auctionItem.classList.add("auction-item", "col");
+
+          auctionItem.innerHTML = `<div class="card h-100 p-5 border-0">
+                                  <img src="/dietideals24${
+                                    auction.imagePath ||
+                                    "/path/to/default/image.jpg"
+                                  }" class="card-img-top" alt="${
+            auction.title || "Immagine Asta"
+          }">
+                                  <div class="card-body">
+                                    <h5 class="card-title">
+                                      <a href="/dietideals24/auction?id=${
+                                        auction.auctionId
+                                      }">${auction.title}</a>
+                                    </h5>
+                                    <p class="card-text">${
+                                      auction.description || ""
+                                    }</p>
+                                    <p class="card-text">#${
+                                      auction.category || "N/A"
+                                    }</p>
+                                    ${
+                                      auction.auctionType !== "silenziosa"
+                                        ? `<p class="card-text"><strong>Prezzo attuale:</strong> ${auction.currentPrice} &#8364;</p>`
+                                        : ""
+                                    }
+                                    ${""}
+                                    <p class="card-text"><strong>Creatore asta:</strong>
+                                      <a href="/dietideals24/profile?username=${
+                                        auction.sellerId !== undefined &&
+                                        auction.sellerId !== null
+                                          ? auction.sellerId
+                                          : auction.buyerId
+                                      }">
+                                      ${
+                                        auction.sellerId !== undefined &&
+                                        auction.sellerId !== null
+                                          ? auction.sellerId
+                                          : auction.buyerId
+                                      }
+                                      </a>
+                                    </p>
+                                  </div>
+                                  <div class="card-footer">
+                                    <small class="text-body-secondary">Asta: ${
+                                      auction.auctionType || "N/D"
+                                    }</small>
+                                    <small class="text-body-secondary">Scadenza: ${
+                                      auction.endTime
+                                        ? new Date(
+                                            auction.endTime
+                                          ).toLocaleString()
+                                        : "N/D"
+                                    }</small>
+                                  </div>
+                                </div>`;
+
+          container.appendChild(auctionItem);
+        });
+
+        document.getElementById("prev-page").disabled = page <= 1;
+
+        document.getElementById("next-page").disabled = !data.hasMore;
+
+        const currentUrl = new URL(window.location);
+        currentUrl.searchParams.set("page", page);
+        currentUrl.searchParams.set("pageSize", pageSize);
+        if (keyword) currentUrl.searchParams.set("keyword", keyword);
+        else currentUrl.searchParams.delete("keyword");
+        if (filterType) currentUrl.searchParams.set("filterType", filterType);
+        else currentUrl.searchParams.delete("filterType");
+        if (category) currentUrl.searchParams.set("category", category);
+        else currentUrl.searchParams.delete("category");
+        window.history.pushState({ page: page }, "", currentUrl.toString());
+
+        document
+          .getElementById("next-page")
+          .setAttribute("onclick", `fetchAuctions(${parseInt(page, 10) + 1})`); // CORRETTO
+        document
+          .getElementById("prev-page")
+          .setAttribute("onclick", `fetchAuctions(${parseInt(page, 10) - 1})`); // CORRETTO
+      })
+      .catch((error) => {
+        console.error("Errore nel recupero delle aste:", error);
+        document.getElementById(
+          "auction-container"
+        ).innerHTML = `<p class="col offset-md-4 text-center">Errore nel caricamento delle aste. (${error.message})</p>`;
+
+        document.getElementById("prev-page").disabled = true;
+        document.getElementById("next-page").disabled = true;
+      });
+  }
+
+  const initialPage =
+    parseInt(new URLSearchParams(window.location.search).get("page"), 10) || 1;
+  fetchAuctions(initialPage);
+</script>
